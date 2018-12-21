@@ -21,6 +21,7 @@ export interface IOrder {
 })
 export class CartComponent implements OnInit {
 
+  nameParams: string;
   bikes: Array<Bike> = [];
   localStorageService: LocalStorageService<Bike>;
   currentUser: IUser;
@@ -74,7 +75,15 @@ export class CartComponent implements OnInit {
   }
 
   goToCheckout(bikes: IOrder) {
-    const total = bikes.price;
+    let subTotal = 0;
+    let total = 0;
+    let tax = .15;
+
+    for (let i = 0, len = this.bikes.length; i < len; i++) {
+      const bike = this.bikes[i];
+      subTotal += bike.price;
+      total = subTotal + tax;
+    }
     this.localStorageService.saveItemsToLocalStorage(this.bikes);
     this.router.navigate(['invoice', bikes]);
   }
