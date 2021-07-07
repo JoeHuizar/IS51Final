@@ -21,6 +21,7 @@ export interface IOrder {
 })
 export class CartComponent implements OnInit {
 
+  nameParams: string;
   bikes: Array<Bike> = [];
   localStorageService: LocalStorageService<Bike>;
   currentUser: IUser;
@@ -31,7 +32,7 @@ export class CartComponent implements OnInit {
     private toastService: ToastService
   ) {
     this.localStorageService = new LocalStorageService('bikes');
-   }
+  }
 
   async ngOnInit() {
     // const currentUser = this.localStorageService.getItemsFromLocalStorage('user');
@@ -46,12 +47,12 @@ export class CartComponent implements OnInit {
   }
 
   async loadBikes() {
-    // const savedBikes = this.localStorageService.getItemsFromLocalStorage('bikes');
-    // if (savedBikes && savedBikes.length > 0) {
-    //   this.bikes = savedBikes;
-    // } else {
-      this.bikes = await this.loadItemsFromFile();
-    // }
+    const savedBikes = this.localStorageService.getItemsFromLocalStorage('bikes');
+    if (savedBikes && savedBikes.length > 0) {
+      this.bikes = savedBikes;
+    } else {
+    this.bikes = await this.loadItemsFromFile();
+    }
   }
 
 
@@ -67,16 +68,30 @@ export class CartComponent implements OnInit {
   deleteBike(index: number) {
     this.bikes.splice(index, 1);
     this.localStorageService.saveItemsToLocalStorage(this.bikes);
+    this.toastService.showToast('success', 4000, 'Success: Item deleted!');
   }
 
-  saveBike(bike: any) {
-      this.localStorageService.saveItemsToLocalStorage(this.bikes);
+  saveBike(bike: Bike) {
+    this.localStorageService.saveItemsToLocalStorage(this.bikes);
+    this.toastService.showToast('success', 4000, 'Success: Items Saved!');
   }
 
   goToCheckout(bikes: IOrder) {
-    const total = bikes.price;
-    this.localStorageService.saveItemsToLocalStorage(this.bikes);
-    this.router.navigate(['invoice', bikes]);
+    let subTotal = 0;
+    let total = 0;
+    let tax = .15;
+
+    for (let i = 0, len = this.bikes.length; i < len; i++) {
+      const bike = this.bikes[i];
+      subTotal += bike.price;
+      total = subTotal + tax;
+    }
+    if (this.nameParams == '' || this.nameParams == null) {
+      this.toastService.showToast('danger', 4000, 'Name input field not specified!');
+    } else {
+      this.localStorageService.saveItemsToLocalStorage(this.bikes);
+      this.router.navigate(['invoice', bikes]);
+    }
   }
 
 
